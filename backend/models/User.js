@@ -5,11 +5,23 @@ const UserSchema = new Schema({
     name: {
         type: String,
         required: true,
+        trim: true
+    },
+    avatar: {
+        type: String,
+        default: "https://1drv.ms/i/c/1b2536053cb0aafa/IQRLtj3U1rPaRJr9YMQB-XLtAblcJDGBLTxERkXOlTsT3cE?width=1024",
+    },
+    phone: {
+        type: [Schema.Types.ObjectId],
+        default: null,
+        ref: 'phone'
     },
     role: {
         type: String,
-        required: true,
-        enum: ['client', 'admin', 'super_admin'],
+        enum: {
+            values: ['client', 'admin', 'super_admin'],
+            message: "Invalid user role."
+        } ,
         default: 'client',
     },
     email: {
@@ -29,13 +41,33 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    deleted: {
+    deactivate: {
         type: Boolean,
         default: false,
     },
+    purchaseHistory: {
+        type: [Schema.Types.ObjectId],
+        default: null,
+        ref: 'purchase_history'
+    },
+    adminData: {
+        type: Schema.Types.ObjectId,
+        default: null,
+        ref: 'admin_data'
+    },
+    clientData: {
+        type: Schema.Types.ObjectId,
+        default: null,
+        ref: 'client_data'
+    },
+    supportPhone: {
+        type: [Schema.Types.ObjectId],  // Only accessable for {role => admin}
+        default: null,
+        ref: 'phone'
+    },
 }, { timestamps: true });
 
-const user = mongoose.model('User', UserSchema);
+const user = mongoose.model('users', UserSchema);
 
 UserSchema.methods.verifyPassword = async function (password) {
     return await bcrypt.compare(password, this.hashPass);

@@ -11,7 +11,7 @@ import { JWT_SECRET, PRODUCTION } from '../config.js'
 
 const hashString = async (str) => {
     return await bcrypt.hash(Pass, 20);
-}
+};
 
 const RegisterUser = async ({ name, role, email, pass }) => {
     const hashPass = await hashString(pass);
@@ -63,30 +63,28 @@ const compareString = (str1, str2) => {
     }
 
     return true
-}
+};
 
 export const ManualRegister = async (req, res) => {
     try {
         const user = await UserSchema.findOne({ email: req.body.email })
-        // TODO: update url -> account verification of frontend
+        // TODO: insert url of account verification frontend
         const frontendPath = "<frontend-url>"
 
         if (!user || !user?.verified) {
 
             user = await RegisterUser(req.body);
             const verificationToken = generateToken({ _id: user?._id, email: user?.email }, { expiresIn: 15 * 60 })
-            const url = `${frontendPath}?token=${verificationToken}`
-
             const mail = await SendEmail({
                 to: user?.email,
                 subject: "Account Verification",
-                html: AccountVerification(url),
+                html: AccountVerification(`${frontendPath}?token=${verificationToken}`),
             });
 
             return res.json({
                 register: true,
                 user,
-                email: mail ? true : false
+                mail: mail ? true : false
             });
 
         } else {
@@ -137,18 +135,35 @@ export const ManualLogin = async (req, res) => {
         const user = await UserSchema.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({ message: "Invalid credentials" });
+            return res.status(401).json({
+                error: true,
+                message: "User with this email not found."
+            });
+        }
+
+        if (user?.deactivate) {
+            return res.status(400).json({
+                error: true,
+                message: "Account is deactivated."
+            })
         }
 
         const isMatch = await user.verifyPassword(password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid credentials" });
+            return res.status(401).json({
+                error: true,
+                message: "Invalid credentials"
+            });
         }
 
         const token = generateToken(user);
         res.cookie("token", token, cookieOptions);
 
-        return res.status(200).json({ message: "Login successful", token, user });
+        return res.status(200).json({
+            token,
+            user,
+            message: "Login successful",
+        });
 
     } catch (error) {
         CustomError(error, res);
@@ -164,39 +179,36 @@ export const PasswordReset_Send = async (req, res) => {
         const frontendPath = "<frontend-url>"
 
         if (!user) {
-
             return res.status(404).json({
                 mail: false,
                 error: "User with this email does'nt exist"
             })
-
-        } else {
-
-            const token = generateToken({ _id: user?._id, email: user?.email }, { expiresIn: 15 * 60 });
-            const url = `${frontendPath}?token=${token}`
-
-            const update = await UserSchema.findOneAndUpdate(
-                { email },
-                { $set: { recoveryToken: token } },
-                { new: true }
-            );
-
-            const mail = await SendEmail({
-                to: req?.body?.email,
-                subject: "Account Recovery",
-                html: PasswordChangeRequest(url)
-            })
-
-            return res.json({
-                mail: mail ? true : false,
-                error: mail && update ? false : true,
-            })
         }
 
+        const token = generateToken({ _id: user?._id, email: user?.email }, { expiresIn: 15 * 60 });
+        const update = await UserSchema.findOneAndUpdate(
+            { email },
+            { $set: { recoveryToken: token } },
+            { new: true }
+        );
+
+        const mail = await SendEmail({
+            to: email,
+            subject: req?.body?.activate ? "Account Activation" : "Account Recovery",
+            html: req?.body?.activate ? AccountActivateSend(user?.name, `${frontendPath}?token=${token}&activation=true`) : PasswordChangeRequest(`${frontendPath}?token=${token}&passwordreset=true`),
+        })
+
+        return res.json({
+            mail: mail ? true : false,
+            error: mail && update ? false : true,
+            activation: req?.body?.activate ? true : false,
+            passwordreset: req?.body?.activate ? false : true
+        })
+
     } catch (error) {
-        CustomError(error)
+        CustomError(error, res)
     }
-}
+};
 
 export const PasswordReset_Reset = async (req, res) => {
     try {
@@ -208,7 +220,6 @@ export const PasswordReset_Reset = async (req, res) => {
         if (!valid) {
             return res.status(400).json({
                 reset: false,
-                update: null,
                 message: expired ? "Token has expired! Please try to register again." : "Invalid token!",
             });
         };
@@ -217,7 +228,6 @@ export const PasswordReset_Reset = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 reset: false,
-                update: null,
                 message: "User with this email not found.",
             })
         }
@@ -228,7 +238,7 @@ export const PasswordReset_Reset = async (req, res) => {
             const hashPass = await hashString(pass)
             const update = await UserSchema.findByIdAndUpdate(
                 { _id: decoded?._id },
-                { $set: { hashPass } },
+                { $set: { hashPass, verificationToken: null } },
                 { new: true } // Return the updated document
             );
 
@@ -250,11 +260,125 @@ export const PasswordReset_Reset = async (req, res) => {
 
         return res.json({
             reset: false,
-            update: null,
             message: "Token malfunctioned! Try to re-send password request.",
         })
 
     } catch (error) {
-        CustomError(error)
+        CustomError(error, res)
+    }
+};
+
+// Attempt to deactivate account || Only available for role: admin
+export const DeactivateAccount = async (req, res) => {
+    try {
+
+        const { pass, id } = req.body
+        const user = await UserSchema.findOne({ _id: id })
+        if (!user) {
+            return res.status(404).json({
+                error: true,
+                message: "Account not found.",
+            })
+        }
+
+        if (user?.role?.toLocaleLowerCase() !== "admin") {
+            return res.status(503).json({
+                error: true,
+                message: "Service unavailable"
+            })
+        }
+
+        const isMatch = await user.verifyPassword(pass)
+        if (!isMatch) {
+            return res.status(400).json({
+                error: true,
+                message: "Invalid Password.",
+            })
+        }
+
+        const update = await UserSchema.findByIdAndUpdate(
+            { _id: id },
+            { $set: { deactivate: true } },
+            { new: true }
+        )
+
+        // TODO: insert frontent login link here
+        const url = "<frontent-path>"
+        const mail = await SendEmail({
+            to: update?.email,
+            subject: "Account Deactivation",
+            html: AccountDeactivateAck(update?.name, url)
+        })
+
+        res.clearCookie('token', cookieOptions);
+        return res.json({
+            error: false,
+            mail: mail ? true : false,
+            update,
+            message: "Account has been deactivated.",
+        })
+
+    } catch (error) {
+        CustomError(error, res);
+    }
+};
+
+export const ReactivateAccount_Send = (req, res, next) => {
+    try {
+
+        req.body.activate = true
+        next();
+
+    } catch (error) {
+        CustomError(error, res);
+    }
+};
+
+export const ReactivateAccount_Activate = async (req, res) => {
+    try {
+
+        const { token } = req.query
+        const { valid, expired, decoded } = jwtToPayload(token);
+
+        if (!valid) {
+            return res.status(400).json({
+                reset: false,
+                message: expired ? "Token has expired! Please try to register again." : "Invalid token!",
+            });
+        };
+
+        let user = await UserSchema.findById({ _id: decoded?._id })
+        if (!user) {
+            return res.status(404).json({
+                reset: false,
+                message: "User with this email not found.",
+            })
+        }
+
+        // mathing two jwt => core-character match
+        const matched = compareString(JSON.stringify(token))
+        if (matched) {
+            const update = await UserSchema.findByIdAndUpdate(
+                { _id: user?.id },
+                { $set: { deactivate: false } }
+            )
+
+            const token = generateToken(user);
+            res.cookie("token", token, cookieOptions);
+
+            return res.status(200).json({
+                token,
+                update,
+                message: "Account has been activated",
+            });
+        }
+
+        return res.json({
+            reset: false,
+            message: "Token malfunctioned! Try to re-send password request.",
+        })
+
+    } catch (error) {
+        CustomError(error, res)
     }
 }
