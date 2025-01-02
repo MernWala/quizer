@@ -4,9 +4,10 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon app.js",
+    "preview": "nodemon ./emailPreview.js"
   },
-  "author": "",
+  "author": "Shivam Kashyap",
   "license": "ISC",
   "description": "",
   "dependencies": {
@@ -22,6 +23,7 @@
     "nodemailer": "^6.9.16"
   },
   "devDependencies": {
+    "fs": "^0.0.1-security",
     "nodemon": "^3.1.9"
   }
 }

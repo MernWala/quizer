@@ -1,6 +1,6 @@
 import html from './utils.js'
 
-const AccountDeactivateAck = (userName, url) => {
+const AccountDeactivateAck = (userName="DUMMY_NAME", url="DUMMY_LINK") => {
     const content = `
         <p style="margin: 15px 0;">Dear ${userName},</p>
         <p style="margin: 15px 0;">We're writing to confirm that your account has been successfully deactivated. Below is a summary of the changes applied:</p>

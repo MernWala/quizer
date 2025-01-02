@@ -1,6 +1,6 @@
 import html from './utils.js'
 
-const PasswordChangeRequest = (url) => {
+const PasswordChangeRequest = (url="DUMMY_LINK") => {
     const content = `
         <p style="margin: 15px 0;">We received a request to reset the password for your account associated with this email address. If you made this request, please reset your password by clicking the button below:</p>
         <p style="margin: 15px 0; text-align: center;"><a href="${url}" style="display: inline-block; padding: 12px 20px; font-size: 16px; color: #ffffff; background-color: #032325; text-decoration: none; border-radius: 5px;">Reset My Password</a></p>

@@ -1,6 +1,6 @@
 import html from './utils.js'
 
-const PasswordChangeAcknowledgement = (SUPPORT_LINK) => {
+const PasswordChangeAcknowledgement = (SUPPORT_LINK="DUMMY_LINK") => {
     const content = `
         <p style="margin: 15px 0;">Your password has been successfully changed for your account associated with this email address. If you did not make this change, please contact us immediately to secure your account.</p>
         <p style="margin: 15px 0;">If you recently changed your password, you can now log in with your new password. Make sure to keep it secure!</p>

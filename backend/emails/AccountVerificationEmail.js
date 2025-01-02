@@ -1,6 +1,6 @@
 import html from './utils.js'
 
-const AccountVerificationEmail = (url) => {
+const AccountVerificationEmail = (url="DUMMY_LINK") => {
     const content = `
         <p style="margin: 15px 0;">Thank you for signing up for our AI-powered Quiz App! To activate your account, please verify your email by clicking the button below:</p>
         <p style="margin: 15px 0; text-align: center;">

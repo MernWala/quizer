@@ -1,6 +1,6 @@
-import html from "./utils"
+import html from "./utils.js"
 
-const AccountActivateSend = (userName, reactivateLink) => {
+const AccountActivateSend = (userName="DUMMY_NAME", reactivateLink="DUMMY_LINK") => {
     const content = `
         <p style="margin: 15px 0;">Dear ${userName},</p>
         <p style="margin: 15px 0;">We're excited to inform you that you can now reactivate your account and regain access to all your data and features. Follow the link below to complete the reactivation process:</p>
