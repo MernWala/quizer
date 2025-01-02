@@ -66,6 +66,10 @@ app.get('/', async (req, res) => {
 });
 
 
+app.get("/DUMMY_LINK", (req, res) => {
+    res.redirect("/")
+})
+
 app.listen(PORT, () => {
     console.log(`Email Preview running at PORT: ${PORT}`);
 });
