@@ -1,6 +1,7 @@
 const header = (title) => {
     return `
         <div style="background-color: #032325; padding: 20px; text-align: center;">
+            <span>Changes</span>
             <h1 style="font-size: 24px; color: #fff; margin: 0;">${title}</h1>
         </div>
     `
