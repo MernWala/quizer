@@ -1,90 +1,39 @@
 import UserSchema from '../models/User.js'
-import bcrypt from 'bcrypt'
 import CustomError from '../middleware/ErrorMiddleware.js'
 import SendEmail from '../utils/SendEmail.js'
-import jwt from 'jsonwebtoken'
-import AccountVerification from '../emails/AccountVerificationEmail.js'
-import PasswordChangeRequest from '../emails/PasswordChangeRequest.js'
-import PasswordChangeAcknowledgement from '../emails/PasswordChangeAcknow.js'
-import { JWT_SECRET, PRODUCTION } from '../config.js'
+import emailTemplates from '../emails/main.js'
+import { FRONTENDHOST } from '../config.js'
+import { cookieOptions, hashString, RegisterUser, generateToken, jwtToPayload, comparePassword, compareString } from '../utils/Genral.js'
 
-
-const hashString = async (str) => {
-    return await bcrypt.hash(Pass, 20);
-};
-
-const RegisterUser = async ({ name, role, email, pass }) => {
-    const hashPass = await hashString(pass);
-    const user = new UserSchema({ name, role, email, hashPass });
-    await user.save()
-    return user
-};
-
-const generateToken = (data, options) => {
-    return jwt.sign(data, JWT_SECRET, options)
-};
-
-const jwtToPayload = (token) => {
-    try {
-        const payload = jwt.verify(token, JWT_SECRET);
-        return {
-            valid: true,
-            payload,
-            error: null
-        };
-    } catch (err) {
-        return {
-            valid: false,
-            payload: null,
-            error: err.name === 'TokenExpiredError' ? 'Token has expired' : 'Invalid token',
-        };
-    }
-};
-
-const cookieOptions = {
-    httpOnly: true,  // Prevent access to cookie via client-side scripts
-    secure: JSON.parse(PRODUCTION ?? "false"),   // JSON("true") -> true || JSON("false") -> false
-    path: '/',      // Cookie will be available for the entire domain
-    sameSite: 'none',  // Required for cross-origin cookies
-    maxAge: 1000 * 60 * 60 * 24, // Cookie expires after 1 day (value in milliseconds) || {1 second: 1000 millisecond}
-    expires: new Date(Date.now() + 1000 * 60 * 60 * 24),  // Alternatively, set an explicit expiration date/time
-};
-
-const compareString = (str1, str2) => {
-    if (str1.length !== str2.length) {
-        return false
-    }
-
-    const arr1 = str1.split("")
-    const arr2 = str2.split("")
-
-    for (let i = 0; i < arr1.length; i++) {
-        if (arr1[i] !== arr2[i]) return false
-    }
-
-    return true
-};
+const {
+    AccountActivateSend,
+    AccountDeactivateAcknowledgement,
+    AccountVerification,
+    PasswordChangeAcknowledgement,
+    PasswordChangeRequest,
+} = emailTemplates
 
 export const ManualRegister = async (req, res) => {
     try {
-        const user = await UserSchema.findOne({ email: req.body.email })
-        // TODO: insert url of account verification frontend
-        const frontendPath = "<frontend-url>"
+        let user = await UserSchema.findOne({ email: req.body.email })
 
         if (!user || !user?.verified) {
+            if (!user) {
+                user = await RegisterUser(req.body);
+            }
 
-            user = await RegisterUser(req.body);
             const verificationToken = generateToken({ _id: user?._id, email: user?.email }, { expiresIn: 15 * 60 })
             const mail = await SendEmail({
                 to: user?.email,
                 subject: "Account Verification",
-                html: AccountVerification(`${frontendPath}?token=${verificationToken}`),
+                // TODO: Link check
+                html: AccountVerification(`${FRONTENDHOST}/account/verify?token=${verificationToken}`),
             });
 
             return res.json({
                 register: true,
                 user,
-                mail: mail ? true : false
+                mail: mail ? true : false,
             });
 
         } else {
@@ -131,7 +80,7 @@ export const ManualVerifyAccount = async (req, res) => {
 export const ManualLogin = async (req, res) => {
     try {
 
-        const { email, password } = req.body;
+        const { email, pass } = req.body;
         const user = await UserSchema.findOne({ email });
 
         if (!user) {
@@ -148,7 +97,7 @@ export const ManualLogin = async (req, res) => {
             })
         }
 
-        const isMatch = await user.verifyPassword(password);
+        const isMatch = await comparePassword(pass, user?.hashPass);
         if (!isMatch) {
             return res.status(401).json({
                 error: true,
@@ -156,7 +105,7 @@ export const ManualLogin = async (req, res) => {
             });
         }
 
-        const token = generateToken(user);
+        const token = generateToken({ _id: user?._id });
         res.cookie("token", token, cookieOptions);
 
         return res.status(200).json({
@@ -175,13 +124,11 @@ export const PasswordReset_Send = async (req, res) => {
 
         const { email } = req.body
         const user = await UserSchema.findOne({ email })
-        // TODO: update url -> account recovery of frontend
-        const frontendPath = "<frontend-url>"
 
         if (!user) {
             return res.status(404).json({
                 mail: false,
-                error: "User with this email does'nt exist"
+                error: "User with this email does'nt exist!"
             })
         }
 
@@ -195,14 +142,16 @@ export const PasswordReset_Send = async (req, res) => {
         const mail = await SendEmail({
             to: email,
             subject: req?.body?.activate ? "Account Activation" : "Account Recovery",
-            html: req?.body?.activate ? AccountActivateSend(user?.name, `${frontendPath}?token=${token}&activation=true`) : PasswordChangeRequest(`${frontendPath}?token=${token}&passwordreset=true`),
+            // TODO: Link check
+            html: req?.body?.activate ? AccountActivateSend(user?.name, `${FRONTENDHOST}/#/?token=${token}&activation=true`) : PasswordChangeRequest(`${FRONTENDHOST}/#/?token=${token}&passwordreset=true`),
         })
 
         return res.json({
             mail: mail ? true : false,
             error: mail && update ? false : true,
             activation: req?.body?.activate ? true : false,
-            passwordreset: req?.body?.activate ? false : true
+            passwordreset: req?.body?.activate ? false : true,
+            token,
         })
 
     } catch (error) {
@@ -232,28 +181,25 @@ export const PasswordReset_Reset = async (req, res) => {
             })
         }
 
-        // mathing two jwt => core-character match
-        const matched = compareString(JSON.stringify(token))
+        const matched = compareString(JSON.stringify(token), JSON.stringify(user?.recoveryToken));
         if (matched) {
             const hashPass = await hashString(pass)
             const update = await UserSchema.findByIdAndUpdate(
                 { _id: decoded?._id },
-                { $set: { hashPass, verificationToken: null } },
+                { $set: { hashPass, recoveryToken: null } },
                 { new: true } // Return the updated document
             );
 
-            // TODO: insert contact url
-            const url = "<frontend-path>"
             const email = await SendEmail({
                 to: update?.email,
                 subject: "Password Change Acknowledgement",
-                html: PasswordChangeAcknowledgement(url),
+                html: PasswordChangeAcknowledgement(`${FRONTENDHOST}/#/contact`),
             })
 
             return res.json({
                 reset: true,
                 update,
-                email,
+                email: email ? true : false,
                 message: "Password has been updated."
             });
         }
@@ -272,23 +218,10 @@ export const PasswordReset_Reset = async (req, res) => {
 export const DeactivateAccount = async (req, res) => {
     try {
 
-        const { pass, id } = req.body
-        const user = await UserSchema.findOne({ _id: id })
-        if (!user) {
-            return res.status(404).json({
-                error: true,
-                message: "Account not found.",
-            })
-        }
+        const { pass } = req.body
+        const user = req.user
 
-        if (user?.role?.toLocaleLowerCase() !== "admin") {
-            return res.status(503).json({
-                error: true,
-                message: "Service unavailable"
-            })
-        }
-
-        const isMatch = await user.verifyPassword(pass)
+        const isMatch = await comparePassword(pass, user?.hashPass)
         if (!isMatch) {
             return res.status(400).json({
                 error: true,
@@ -297,20 +230,19 @@ export const DeactivateAccount = async (req, res) => {
         }
 
         const update = await UserSchema.findByIdAndUpdate(
-            { _id: id },
+            { _id: user?.id },
             { $set: { deactivate: true } },
             { new: true }
         )
 
-        // TODO: insert frontent login link here
-        const url = "<frontent-path>"
         const mail = await SendEmail({
             to: update?.email,
             subject: "Account Deactivation",
-            html: AccountDeactivateAck(update?.name, url)
+            // TODO: Link check
+            html: AccountDeactivateAcknowledgement(update?.name, `${FRONTENDHOST}/`)
         })
 
-        res.clearCookie('token', cookieOptions);
+        res.clearCookie('token');
         return res.json({
             error: false,
             mail: mail ? true : false,
@@ -355,15 +287,15 @@ export const ReactivateAccount_Activate = async (req, res) => {
             })
         }
 
-        // mathing two jwt => core-character match
-        const matched = compareString(JSON.stringify(token))
+        const matched = compareString(JSON.stringify(token), JSON.stringify(user?.recoveryToken))
         if (matched) {
             const update = await UserSchema.findByIdAndUpdate(
                 { _id: user?.id },
-                { $set: { deactivate: false } }
+                { $set: { deactivate: false, recoveryToken: null } },
+                { new: true }
             )
 
-            const token = generateToken(user);
+            const token = generateToken({ _id: user?._id });
             res.cookie("token", token, cookieOptions);
 
             return res.status(200).json({
@@ -381,4 +313,4 @@ export const ReactivateAccount_Activate = async (req, res) => {
     } catch (error) {
         CustomError(error, res)
     }
-}
+};

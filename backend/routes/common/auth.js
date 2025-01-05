@@ -1,7 +1,7 @@
 import express from 'express'
 import BodyValidator from '../../middleware/BodyValidator.js'
-import { validateJWT } from '../../utils/queryValidation.js'
-import { validateEmail, validateMongoId, validateName, validatePassword, validateRole } from '../../utils/bodyValidation.js'
+import { validateJWT } from '../../validation/queryValidation.js'
+import { validateEmail, validateName, validatePassword, validateRole } from '../../validation/bodyValidation.js'
 import {
     ManualLogin,
     ManualRegister,
@@ -12,6 +12,7 @@ import {
     DeactivateAccount,
     ReactivateAccount_Activate
 } from '../../controllers/auth.js'
+import { AdminAuthorityCheck } from '../../validation/AuthorityCheck.js'
 
 const router = express.Router();
 
@@ -47,18 +48,18 @@ router.post("/password-reset/reset",
 
 // Route 6: Account deactivate
 router.post("/deactivate-account",
-    [validatePassword("pass"), validateMongoId("id")],
-    BodyValidator, DeactivateAccount
+    [validatePassword("pass")],
+    AdminAuthorityCheck, BodyValidator, DeactivateAccount
 )
 
 // Route 7: Account activate send
 router.post("/activate-account/send",
-    [validatePassword("email")],
+    [validateEmail("email")],
     BodyValidator, ReactivateAccount_Send, PasswordReset_Send
 )
 
 // Route 8: Account activate activate
-router.post("/activate-account/activate", 
+router.post("/activate-account/activate",
     [validateJWT("token")],
     BodyValidator, ReactivateAccount_Activate
 )

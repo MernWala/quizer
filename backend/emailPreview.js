@@ -1,3 +1,11 @@
+/**
+ * Important: Make sure you should've browser-sync installed on you machine
+ * 
+ * To install it use below code on you terminal:
+ * npm i browser-sync -D
+ * 
+ */
+
 import express from 'express';
 import fs from 'fs'
 
@@ -18,7 +26,7 @@ const loadEmailModules = async () => {
     try {
         const emailFiles = getEmailDirs();
         const modules = await Promise.all(
-            emailFiles.filter((file) => file.endsWith('.js') && !file.startsWith("util")).map(async (file) => {
+            emailFiles.filter((file) => file.endsWith('.js') && !file.startsWith("util") && !file.startsWith("main")).map(async (file) => {
                 const modulePath = `./emails/${file}`;
                 const module = await import(modulePath);
                 return { file, module };
@@ -58,7 +66,7 @@ app.get('/', async (req, res) => {
     const arr = await loadEmailModules().then(arr => arr)
     const links = arr.map(a => {
         if (a?.fun)
-            return { name: `${a?.name}.html`, link: `http://localhost:${PORT}/${a?.name}` }
+            return { name: `${a?.name}.html`, link: `http://localhost:4001/${a?.name}` }
         return { name: `${a?.name}.html`, error: "Incompleted function!" }
     })
 
@@ -70,6 +78,4 @@ app.get("/DUMMY_LINK", (req, res) => {
     res.redirect("/")
 })
 
-app.listen(PORT, () => {
-    console.log(`Email Preview running at PORT: ${PORT}`);
-});
+app.listen(PORT);

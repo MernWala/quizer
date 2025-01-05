@@ -10,7 +10,7 @@ const AccountActivateSend = (userName="DUMMY_NAME", reactivateLink="DUMMY_LINK")
         <p style="margin: 15px 0; text-align: center; font-size: 14px; color: #666666;">
             If the button above doesn't work, please copy and paste the following link into your browser:
         </p>
-        <p style="margin: 15px 0; text-align: center; font-size: 14px; color: #032325;">
+        <p style="margin: 15px 0; font-size: 14px; color: #032325;">
             <a href="${reactivateLink}" style="color: #032325; text-decoration: none;">${reactivateLink}</a>
         </p>
         <p style="margin: 15px 0;">Once your account is reactivated, you'll regain full access to your dashboard, previously created question sets, and all other features. Any quizzes you published earlier will also become available to participants.</p>

@@ -13,7 +13,7 @@ export const validateRole = (key) => body(key)
     .withMessage(`${key} not found!"`)
     .custom((value) => {
         const validRole = ['client', 'admin'];
-        if (validRole.indexOf(value) > 0)
+        if (validRole.indexOf(value) >= 0)
             return true;
         throw Error(`${key} is not valid!`)
     });

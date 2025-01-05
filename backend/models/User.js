@@ -69,8 +69,4 @@ const UserSchema = new Schema({
 
 const user = mongoose.model('users', UserSchema);
 
-UserSchema.methods.verifyPassword = async function (password) {
-    return await bcrypt.compare(password, this.hashPass);
-};
-
 export default user;
