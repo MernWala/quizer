@@ -1,6 +1,6 @@
 import { validationResult } from "express-validator";
 
-const BodyValidator = (req, res, next) => {
+const ExpressValidator = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -12,4 +12,4 @@ const BodyValidator = (req, res, next) => {
     next();
 }
 
-export default BodyValidator;
+export default ExpressValidator;

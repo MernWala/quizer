@@ -6,7 +6,7 @@ const QuestionSchema = new Schema({
         required: true,
         trim: true
     },
-    sections: {
+    section: {
         type: String,
     },
     options: {
@@ -15,14 +15,17 @@ const QuestionSchema = new Schema({
         trim: true,
         validate: [options => options.length >= 2, 'There must be at least 2 options'],
     },
+    images: {
+        type: [String]
+    },
     answers: {
         type: [String],
         required: true,
         trim: true
     },
-    quizType: {
+    type: {
         type: String,
-        enum: ["single_choice", "multi_choice"],
+        enum: ["single_choice", "multi_choice", "short_answer", "long_answer"],
         default: "single_choice",
     }
 }, { timestamps: true })

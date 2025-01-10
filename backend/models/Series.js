@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
-const SeriesSchema = new Sceham({
+const SeriesSchema = new Schema({
     name: {
         type: String,
         require: true

@@ -1,4 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
+import QuizSchema from "./Quiz.js"
+import SeriesSchema from "./Series.js"
 
 const AdminDataSchema = new Schema({
     quizes: {

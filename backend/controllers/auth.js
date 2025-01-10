@@ -81,6 +81,7 @@ export const ManualLogin = async (req, res) => {
     try {
 
         const { email, pass } = req.body;
+        // TODO: at the production: use .select("-hashPass -recoveryToken -deactivated -adminData -__v")
         const user = await UserSchema.findOne({ email });
 
         if (!user) {

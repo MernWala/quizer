@@ -5,7 +5,7 @@ import UserSchema from '../models/User.js'
 const GetUserId = (token) => {
     try {
         if (!token) {
-            return { error: true, status: 404, message: "Token not found!" }
+            return { error: true, status: 404, message: "Authentication token not found!" }
         }
 
         const { valid, decoded, error, expired } = jwtToPayload(token);
@@ -66,7 +66,7 @@ export const AdminAuthorityCheck = async (req, res, next) => {
             })
         }
 
-        if (user?.role === "admin") {
+        if (user?.role === "admin" || user?.role === "super_admin") {
             req.user = user
             next();
         } else {

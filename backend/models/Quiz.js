@@ -1,11 +1,12 @@
 import mongoose, { Schema } from 'mongoose'
+import FormSchema from "./Form.js"
 
 const QuizeSchema = new Schema({
     name: {
         type: String,
         require: true
     },
-    QuizType: {
+    quizType: {
         type: String,
         enum: ["Free", "Premium", "Restricted"],
         required: true
@@ -30,13 +31,14 @@ const QuizeSchema = new Schema({
     },
     questions: {
         type: [Schema.Types.ObjectId],
+        ref: 'questions',
         default: []
     },
     sectionSwitch: {
         type: Boolean,
         default: true
     },
-    registered: {
+    register: {
         type: Schema.Types.ObjectId,
         ref: 'forms',
         default: null,  // Null means ==> No restriction anyone can participate on this exam
