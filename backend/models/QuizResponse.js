@@ -25,10 +25,6 @@ const QuizResponseSchema = new Schema({
         enum: ["In Progress", "Completed"],
         default: "In Progress"
     },
-    startedAt: {
-        type: Date,
-        default: Date.now()
-    },
     completedAt: {
         type: Date
     },

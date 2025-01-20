@@ -30,10 +30,10 @@ export const validateEmail = (key) => body(key)
     .withMessage(`${key} is not valid.`);
 
 export const validatePassword = (key) => body(key)
-    .trim()
     .exists()
     .withMessage(`${key} not found!`)
     .bail()
+    .trim()
     .custom((value) => {
         const requirements = [
             { regex: /[a-z]/, message: "Password must contain at least one lowercase letter." },

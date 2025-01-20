@@ -4,6 +4,7 @@ import FormSchema from "../models/Form.js";
 import QuizSchema from "../models/Quiz.js";
 import { compareString } from "../utils/Genral.js";
 import slug from "slug"
+import getAllForms from "../hooks/getAllForms.js";
 
 export const createCustomForm = async (req, res, next) => {
     try {
@@ -74,8 +75,9 @@ export const addEnquiry = async (req, res) => {
 
 export const viewDetails = async (req, res) => {
     try {
-        const { quizId, formId, formType } = req.params;
+        const { quizId, formId } = req.params;
         const { token } = req.cookies;
+
         const quizes = await getAllQuizes(token);
         if (!quizes || !quizes.includes(quizId)) {
             return res.status(403).json({
@@ -84,28 +86,17 @@ export const viewDetails = async (req, res) => {
             });
         }
 
-        const data = await QuizSchema.findOne({ _id: quizId });
-        if (!data) {
+        const forms = await getAllForms(quizId);
+        if (forms !== null && forms.includes(formId)) {
+            const data = await FormSchema.findById(formId);
+            return res.json(data)
+        } else {
             return res.status(404).json({
                 error: true,
                 message: "Form not found!"
             });
         }
 
-        if (data[formType] && compareString(JSON.stringify(data.register), JSON.stringify(formId))) {
-            await data.populate("register")
-            return res.json(data?.register);
-        }
-
-        if (data[formType] && data.enquiry.includes(formId)) {
-            await data.populate({ path: "enquiry", match: { _id: formId } })
-            return res.json(data?.enquiry?.[0]);
-        }
-
-        return res.status(404).json({
-            error: true,
-            message: "Form not found!"
-        });
     } catch (error) {
         CustomError(error, res);
     }
@@ -113,19 +104,27 @@ export const viewDetails = async (req, res) => {
 
 export const DeleteForm = async (req, res) => {
     try {
-        const { quizId, formId, formType } = req.params;
+        const { quizId, formId } = req.params;
         const { token } = req.cookies;
+
         const quizes = await getAllQuizes(token);
         if (!quizes || !quizes.includes(quizId)) {
-            return res.status(403).json({
+            return res.status(404).json({
                 success: false,
-                message: "You do not have permission to change this quiz.",
+                message: "Quiz not found.",
+            });
+        }
+
+        const forms = await getAllForms(quizId);
+        if (!forms || !forms.includes(formId)) {
+            return res.status(404).json({
+                error: true,
+                message: "Form not found!"
             });
         }
 
         const quiz = await QuizSchema.findById(quizId);
-
-        if (formType === "register" && compareString(JSON.stringify(quiz.register), JSON.stringify(formId))) {
+        if (data?.register && compareString(JSON.stringify(formId), JSON.stringify(data?.register))) {
             quiz.register = null;
             await quiz.save();
 
@@ -135,9 +134,7 @@ export const DeleteForm = async (req, res) => {
                 success: true,
                 message: "Form has been deleted"
             });
-        }
-
-        if (formType === "enquiry" && quiz.enquiry.includes(formId)) {
+        } else {
             quiz.enquiry = quiz.enquiry.filter(e => !compareString(JSON.stringify(e), JSON.stringify(formId)));
             await quiz.save();
 
@@ -149,10 +146,45 @@ export const DeleteForm = async (req, res) => {
             });
         }
 
-        return res.status(404).json({
-            success: false,
-            message: "Form not found."
+    } catch (error) {
+        CustomError(error, res);
+    }
+};
+
+export const UpdateForm = async (req, res) => {
+    try {
+        const { quizId, formId } = req.params;
+        const { name, description, fields, truncate } = req.body
+        const { token } = req.cookies;
+
+        const quizes = await getAllQuizes(token);
+        if (!quizes || !quizes.includes(quizId)) {
+            return res.status(403).json({
+                success: false,
+                message: "You do not have permission to change this quiz.",
+            });
+        }
+
+        const forms = await getAllForms(quizId);
+        if (!forms || !forms.includes(formId)) {
+            return res.status(404).json({
+                error: true,
+                message: "Form not found!"
+            });
+        }
+
+        const updateData = { name, description, fields };
+        if (truncate) {
+            updateData.response = [];
+        }
+
+        const update = await FormSchema.findByIdAndUpdate(formId, { $set: updateData }, { new: true });
+        return res.status(200).json({
+            success: true,
+            message: "Form has been updated",
+            update
         });
+
     } catch (error) {
         CustomError(error, res);
     }

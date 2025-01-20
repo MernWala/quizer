@@ -44,7 +44,7 @@ router.delete("/delete/question/:quizId/:questionId",
 );
 
 // Route 5: Deleting a quiz
-router.delete("/delete/quiz/:quizId",
+router.delete("/:quizId",
     [validateMongoIdParam("quizId")],
     ExpressValidator, DeleteQuiz
 );

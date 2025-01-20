@@ -22,5 +22,3 @@ const PhoneSchema = new Schema({
 const phone = mongoose.model('phone', PhoneSchema)
 
 export default phone
-
-const mongoose = require('mongoose');

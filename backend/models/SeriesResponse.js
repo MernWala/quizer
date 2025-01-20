@@ -15,14 +15,10 @@ const SeriesResponseSchema = new Schema({
         enum: ["In Progress", "Completed"],
         default: "In Progress"
     },
-    startedAt: {
-        type: Date,
-        default: Date.now()
-    },
     completedAt: {
         type: Date
     },
-})
+}, { timestamps: true })
 
 const seriesRes = mongoose.model('quiz_response', SeriesResponseSchema)
 

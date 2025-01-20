@@ -1,16 +1,12 @@
-// TODO: These routes are not tested yetw
-
+// TODO: These routes are not tested yet
 import express from 'express';
 import ExpressValidator from "../../middleware/ExpressValidator.js"
-import { validateLongString, validateMongoId, validateName } from "../../validation/bodyValidation.js"
+import { validateBoolean, validateLongString, validateMongoId, validateName } from "../../validation/bodyValidation.js"
 import { validateMongoIdParam } from "../../validation/paramValidation.js"
-import { addEnquiry, createCustomForm, DeleteForm, setRegister, viewDetails } from "../../controllers/form.js"
+import { addEnquiry, createCustomForm, DeleteForm, setRegister, UpdateForm, viewDetails } from "../../controllers/form.js"
 import { validateFormObject } from '../../validation/form.js';
-import { param } from 'express-validator';
 
 const router = express.Router();
-
-// Note: Form edit is not allowed here
 
 // Route 1: Form for register user{role: client} in quiz
 router.post("/quiz/register",
@@ -25,29 +21,24 @@ router.post("/quiz/enquiry",
 );
 
 // Route 3: Get forms details
-router.get("/:quizId/:formId/:formType",
-    [
-        validateMongoIdParam("quizId"), validateMongoIdParam("formId"),
-        param("formType").exists().withMessage("Form type not found").isString().withMessage("Invalid form type").custom(val => {
-            if (val === "register" || val === "enquiry")
-                return true
-            throw new Error("Invalid for type value!")
-        })
-    ],
+router.get("/:quizId/:formId",
+    [validateMongoIdParam("quizId"), validateMongoIdParam("formId")],
     ExpressValidator, viewDetails
 );
 
-// Route 4: Update particular form
-router.delete("/:quizId/:formId/:formType",
-    [
-        validateMongoIdParam("quizId"), validateMongoIdParam("formId"),
-        param("formType").exists().withMessage("Form type not found").isString().withMessage("Invalid form type").custom(val => {
-            if (val === "register" || val === "enquiry")
-                return true
-            throw new Error("Invalid for type value!")
-        })
-    ],
+// Route 4: Delete particular form
+router.delete("/:quizId/:formId",
+    [validateMongoIdParam("quizId"), validateMongoIdParam("formId")],
     ExpressValidator, DeleteForm
+);
+
+// Route 5: Update particular form and give access to remove all captured data
+router.put("/:quizId/:formId",
+    [
+        validateMongoIdParam("quizId"), validateMongoIdParam("formId"), validateName("form.name"),
+        validateLongString("form.description"), validateFormObject("form.fields"), validateBoolean("truncate"),
+    ],
+    ExpressValidator, UpdateForm
 );
 
 export default router

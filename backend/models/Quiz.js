@@ -46,7 +46,7 @@ const QuizeSchema = new Schema({
     enquiry: {
         type: [mongoose.Types.ObjectId],
         ref: 'forms',
-        default: null
+        default: []
     }
 }, { timestamps: true })
 

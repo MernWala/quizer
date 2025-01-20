@@ -15,7 +15,7 @@ const FormSchema = new Schema({
     },
     fields: {
         type: [Schema.Types.Mixed],
-        required: true
+        default: []
     },
     stared: {
         type: Boolean,

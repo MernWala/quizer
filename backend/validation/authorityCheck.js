@@ -36,8 +36,15 @@ export const ClientAuthorityCheck = async (req, res, next) => {
         }
 
         if (user?.role === "client") {
-            req.user = user
-            next();
+            if(user?.deactivate === true) {
+                return res.status(403).json({
+                    error: true,
+                    message: "Account is deactivated!"
+                })
+            } else {
+                req.user = user
+                next();
+            }
         } else {
             return res.status(503).json({
                 error: true,
@@ -67,8 +74,15 @@ export const AdminAuthorityCheck = async (req, res, next) => {
         }
 
         if (user?.role === "admin" || user?.role === "super_admin") {
-            req.user = user
-            next();
+            if(user?.deactivate === true) {
+                return res.status(403).json({
+                    error: true,
+                    message: "Account is deactivated!"
+                })
+            } else {
+                req.user = user
+                next();
+            }
         } else {
             return res.status(503).json({
                 error: true,

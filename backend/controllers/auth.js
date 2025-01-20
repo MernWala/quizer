@@ -37,7 +37,7 @@ export const ManualRegister = async (req, res) => {
             });
 
         } else {
-            return res.json({ register: false, error: "User with  already exist!" });
+            return res.status(403).json({ register: false, error: `User with ${user.email} already exist!` });
         }
 
     } catch (error) {

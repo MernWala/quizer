@@ -13,11 +13,6 @@ const CoupounScheam = new Schema({
         type: [Schema.Types.ObjectId],
         ref: 'plan'
     },
-    startsFrom: {
-        type: Date,
-        required: true,
-        default: Date.now()
-    },
     expiresOn: {
         type: Date,
         default: null,  // null means => unlimited time

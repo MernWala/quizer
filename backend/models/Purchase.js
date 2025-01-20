@@ -1,3 +1,4 @@
+// TODO: It needs to be verified
 import mongoose, { Schema } from 'mongoose'
 
 const PurchaseHistorySchema = new Schema({
@@ -20,11 +21,11 @@ const PurchaseHistorySchema = new Schema({
         default: null
     },
     totalPay: {
-        type: "",   // TODO: Insert valid type
+        type: Schema.Types.Decimal128,
         required: true
     },
     transectionObject: {
-        type: String,
+        type: Schema.Types.Mixed,
         require: true
     },
 }, { timestamps: true })

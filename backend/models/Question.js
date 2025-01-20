@@ -11,9 +11,7 @@ const QuestionSchema = new Schema({
     },
     options: {
         type: [String],
-        required: true,
-        trim: true,
-        validate: [options => options.length >= 2, 'There must be at least 2 options'],
+        default: [],
     },
     images: {
         type: [String]
@@ -21,7 +19,6 @@ const QuestionSchema = new Schema({
     answers: {
         type: [String],
         required: true,
-        trim: true
     },
     type: {
         type: String,
