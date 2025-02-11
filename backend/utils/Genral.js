@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { JWT_SECRET, PRODUCTION } from '../config.js'
+import { JWT_SECRET } from '../config.js'
 import UserSchema from '../models/User.js'
 
 export const cookieOptions = {
     httpOnly: true,  // Prevent access to cookie via client-side scripts
-    secure: JSON.parse(PRODUCTION ?? "false"),   // JSON("true") -> true || JSON("false") -> false
+    secure: true,   // JSON("true") -> true || JSON("false") -> false
     path: '/',      // Cookie will be available for the entire domain
     sameSite: 'none',  // Required for cross-origin cookies
     maxAge: 1000 * 60 * 60 * 24, // Cookie expires after 1 day (value in milliseconds) || {1 second: 1000 millisecond}

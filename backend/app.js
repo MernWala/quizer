@@ -7,6 +7,7 @@ import commonMainRoute from './routes/common/main.js'
 import clientMainRoute from './routes/client/main.js'
 import adminMainRoute from './routes/admin/main.js'
 import superAdminMainRoute from './routes/dev/main.js'
+import InternetCheck from './middleware/InternetCheck.js';
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -45,6 +46,7 @@ app.use((req, res, next) => {
 
 // Middleware setup
 app.use(cors(corsOptions));
+app.use(InternetCheck);
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet()); // Security headers

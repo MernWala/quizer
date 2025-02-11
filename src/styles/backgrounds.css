@@ -1,0 +1,12 @@
+.bg-purple-flower {
+    background-image: url("../assets/img/purpleBackground.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.bg-error-404 {
+    background-image: url("../assets/svg/404-error-lost-in-space-animate.svg");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}

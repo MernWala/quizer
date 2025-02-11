@@ -9,7 +9,7 @@ const header = (title) => {
 const footer = () => {
     return `
         <div style="background-color: #f7f9fc; text-align: center; padding: 10px 20px; font-size: 12px; color: #999999;">
-            <p style="font-size: 12px; color: #999999; text-align: center;">This email is system-generated. Please do not reply to this email.</p>
+            <p style="font-size: 12px; color: #999999; text-align: center;">This mail is system-generated. Please do not reply to this email.</p>
             <p style="margin: 0;">&copy; 2024 AI Quiz App. All rights reserved.</p>
         </div>
     `

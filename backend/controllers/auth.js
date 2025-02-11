@@ -26,13 +26,11 @@ export const ManualRegister = async (req, res) => {
             const mail = await SendEmail({
                 to: user?.email,
                 subject: "Account Verification",
-                // TODO: Link check
-                html: AccountVerification(`${FRONTENDHOST}/account/verify?token=${verificationToken}`),
+                html: AccountVerification(`${FRONTENDHOST}/#/auth/verify?token=${verificationToken}&accountVerify=${true}`),
             });
 
             return res.json({
                 register: true,
-                user,
                 mail: mail ? true : false,
             });
 
@@ -69,7 +67,6 @@ export const ManualVerifyAccount = async (req, res) => {
 
         return res.status(200).json({
             verify: true,
-            user,
             message: "Account successfully verified.",
         });
     } catch (error) {
@@ -81,8 +78,7 @@ export const ManualLogin = async (req, res) => {
     try {
 
         const { email, pass } = req.body;
-        // TODO: at the production: use .select("-hashPass -recoveryToken -deactivated -adminData -__v")
-        const user = await UserSchema.findOne({ email });
+        const user = await UserSchema.findOne({ email }).select("-recoveryToken -deactivate -clientData -adminData -__v");
 
         if (!user) {
             return res.status(401).json({
@@ -95,6 +91,20 @@ export const ManualLogin = async (req, res) => {
             return res.status(400).json({
                 error: true,
                 message: "Account is deactivated."
+            })
+        }
+
+        if (!user?.verified) {
+            const verificationToken = generateToken({ _id: user?._id, email: user?.email }, { expiresIn: 15 * 60 })
+            await SendEmail({
+                to: user?.email,
+                subject: "Account Verification",
+                html: AccountVerification(`${FRONTENDHOST}/#/auth/verify?token=${verificationToken}&accountVerify=${true}`),
+            });
+
+            return res.status(400).json({
+                error: true,
+                message: "Account not verified! Check your email for verification link."
             })
         }
 
@@ -143,8 +153,8 @@ export const PasswordReset_Send = async (req, res) => {
         const mail = await SendEmail({
             to: email,
             subject: req?.body?.activate ? "Account Activation" : "Account Recovery",
-            // TODO: Link check
-            html: req?.body?.activate ? AccountActivateSend(user?.name, `${FRONTENDHOST}/#/?token=${token}&activation=true`) : PasswordChangeRequest(`${FRONTENDHOST}/#/?token=${token}&passwordreset=true`),
+            // TODO: Link check of account activate
+            html: req?.body?.activate ? AccountActivateSend(user?.name, `${FRONTENDHOST}/#/?token=${token}&activation=true`) : PasswordChangeRequest(`${FRONTENDHOST}/#/auth/change-password?token=${token}&passwordreset=true`),
         })
 
         return res.json({
@@ -170,7 +180,7 @@ export const PasswordReset_Reset = async (req, res) => {
         if (!valid) {
             return res.status(400).json({
                 reset: false,
-                message: expired ? "Token has expired! Please try to register again." : "Invalid token!",
+                message: expired ? "Token has been expired! Please try to forgot password again." : "Invalid token!",
             });
         };
 
@@ -199,13 +209,12 @@ export const PasswordReset_Reset = async (req, res) => {
 
             return res.json({
                 reset: true,
-                update,
                 email: email ? true : false,
                 message: "Password has been updated."
             });
         }
 
-        return res.json({
+        return res.status(400).json({
             reset: false,
             message: "Token malfunctioned! Try to re-send password request.",
         })
