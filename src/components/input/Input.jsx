@@ -15,7 +15,7 @@ const Input = ({
   const [eye, setEye] = useState(false)
 
   return (
-    <label htmlFor={id} className={`border border-neutral-300 rounded-md px-3 pt-5 pb-2 bg-neutral-50 flex flex-col custom-input-container w-full relative ${className}`}>
+    <label htmlFor={id} className={`border border-neutral-300 rounded-md px-3 pt-5 pb-2 bg-neutral-50 flex flex-col custom-input-container w-full relative text-left ${className}`}>
       <input
         type={eye ? 'text' : type}
         id={id}

@@ -137,7 +137,7 @@ const GenralHeaderFooter = () => {
                                     </li>
                                 </nav>
                             </div>
-                            <div className="lg:w-2/5 sm:w-1/2 w-full px-4">
+                            <div className="lg:w-2/5 sm:w-1/2 w-full px-4 mb-10">
                                 <h2 className="title-font font-medium text-white tracking-widest text-sm mb-3">Our Newsletter</h2>
                                 <form onSubmit={handleSubsribeNewsLetter}>
                                     <div className="flex">
