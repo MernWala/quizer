@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -24,6 +24,11 @@ import PublicQuizzes from "./pages/PublicQuizzes";
 import TermsConditions from "./pages/legal_pages/TermsConditions";
 import PrivacyPolicy from "./pages/legal_pages/PrivacyPolicy";
 
+import AdminDashboardOverview from "./dashboard/admin/overview/Page"
+import AdminDashboardQuiz from "./dashboard/admin/quiz/Page"
+import AdminDashboardSeries from "./dashboard/admin/series/Page"
+import AdminDashboardAnalysis from "./dashboard/admin/analysis/Page"
+
 const App = () => {
 
   useEffect(() => {
@@ -32,6 +37,29 @@ const App = () => {
       offset: 100,
     });
   }, []);
+
+  // Auto scroll for hash id link
+  function ScrollToSection() {
+    const location = useLocation();
+
+    useEffect(() => {
+      if (location.hash) {
+        setTimeout(() => {
+          const element = document.getElementById(location.hash.substring(1));
+          if (element) {
+            const headerOffset = 70;
+            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({
+              top: elementPosition - headerOffset,
+              behavior: "smooth",
+            });
+          }
+        }, 100);
+      }
+    }, [location]);
+
+    return null;
+  }
 
   return (
     <>
@@ -43,6 +71,7 @@ const App = () => {
       <ApiState>
         <CommonState>
           <HashRouter>
+            <ScrollToSection />
             <Routes>
               {/* General pages goes here */}
               <Route element={<GenralHeaderFooter />}>
@@ -73,7 +102,19 @@ const App = () => {
 
               {/* Admin dashboard pages goes here */}
               <Route path="/dashboard/admin" element={<AdminDashboardLayoutWraper />}>
-                <Route index element={<>Admin Dashboard</>} />
+                <Route index element={<AdminDashboardOverview />} />
+
+                <Route path="quiz">
+                  <Route index element={<AdminDashboardQuiz />} />
+                </Route>
+
+                <Route path="series">
+                  <Route index element={<AdminDashboardSeries />} />
+                </Route>
+
+                <Route path="analyze">
+                  <Route index element={<AdminDashboardAnalysis />} />
+                </Route>
               </Route>
 
               {/* All Error pages goes here */}
