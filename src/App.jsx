@@ -26,7 +26,9 @@ import PrivacyPolicy from "./pages/legal_pages/PrivacyPolicy";
 
 import AdminDashboardOverview from "./dashboard/admin/overview/Page"
 import AdminDashboardQuiz from "./dashboard/admin/quiz/Page"
+import AdminQuizDetails from "./dashboard/admin/quiz/Details"
 import AdminDashboardSeries from "./dashboard/admin/series/Page"
+import AdminSeriesDetails from "./dashboard/admin/series/SeriesDetails"
 import AdminDashboardAnalysis from "./dashboard/admin/analysis/Page"
 
 const App = () => {
@@ -106,10 +108,13 @@ const App = () => {
 
                 <Route path="quiz">
                   <Route index element={<AdminDashboardQuiz />} />
+                  <Route path=":quizId" element={<AdminQuizDetails />} />
                 </Route>
 
                 <Route path="series">
                   <Route index element={<AdminDashboardSeries />} />
+                  <Route path=":seriesId" element={<AdminSeriesDetails />} />
+                  <Route path=":seriesId/:quizId" element={<AdminQuizDetails />} />
                 </Route>
 
                 <Route path="analyze">

@@ -1,7 +1,7 @@
 import React from 'react'
 import QuizFolder from '../../../components/QuizFolder'
 
-const page = () => {
+const SeriesDetails = () => {
     return (
         <React.Fragment>
             <div className="flex gap-4 flex-wrap p-3">
@@ -15,4 +15,4 @@ const page = () => {
     )
 }
 
-export default page
+export default SeriesDetails

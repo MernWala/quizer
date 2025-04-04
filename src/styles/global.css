@@ -34,10 +34,16 @@
     text-overflow: ellipsis;
 }
 
+.custom-input-container:has(.textarea-custom) label {
+    top: 20%
+}
+
 .custom-input-container input:focus+label,
 .custom-input-container input:not(:placeholder-shown)+label,
 .custom-input-container select:focus+label,
-.custom-input-container select:not([value=""])+label {
+.custom-input-container select:not([value=""])+label,
+.custom-input-container textarea:focus+label,
+.custom-input-container textarea:not(:placeholder-shown)+label {
     top: 10px;
     font-size: 0.75rem;
     line-height: 1rem;
@@ -57,4 +63,12 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+th {
+    font-weight: 500;
+}
+
+body [aria-describedby=transition-modal-description] {
+    backdrop-filter: blur(5px) brightness(.5);
 }

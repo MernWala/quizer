@@ -8,12 +8,11 @@ import { TbMessageReportFilled } from 'react-icons/tb';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { IoSettings } from 'react-icons/io5';
 import { LuChevronsLeft } from 'react-icons/lu';
-import SidebarItem, { SubMenuItem } from './SidebarItem';
+import SidebarItem from './SidebarItem';
 import { BsPersonFillGear, BsThreeDotsVertical } from 'react-icons/bs';
 import { GrOverview } from 'react-icons/gr';
-import { MdQuiz } from 'react-icons/md';
-import { RiFolderUnknowFill } from 'react-icons/ri';
-import { FaChartPie } from 'react-icons/fa';
+import { FaChartPie, FaFolderOpen } from 'react-icons/fa';
+import { FaFolderTree } from 'react-icons/fa6';
 
 
 const DashboardLayoutWraper = () => {
@@ -59,8 +58,8 @@ const DashboardLayoutWraper = () => {
                             </SidebarItem> */}
 
                             <SidebarItem to={"/dashboard/admin"}> Overview </SidebarItem>
-                            <SidebarItem to={"/dashboard/admin/quiz"}> Manage Quiz </SidebarItem>
-                            <SidebarItem to={"/dashboard/admin/series"}> Manage Series </SidebarItem>
+                            <SidebarItem to={"/dashboard/admin/quiz"}> Quiz </SidebarItem>
+                            <SidebarItem to={"/dashboard/admin/series"}> Series </SidebarItem>
                             <SidebarItem to={"/dashboard/admin/analyze"}> Analysis </SidebarItem>
                         </ul>
                     </div>
@@ -100,33 +99,33 @@ const DashboardLayoutWraper = () => {
                 </div>
             </Drawer>
 
-            <div className='relative h-14 bg-gray-900 text-white flex'>
+            <div className='fixed top-0 h-14 bg-gray-900 text-white flex z-50 w-full'>
                 <div className="flex w-full">
-                    <div className="h-14 w-14 flex-shrink-0"></div>
-                    <div className='w-[calc(100vw-3.5rem)] flex items-center'>
+                    <div className="h-14 w-14 flex-shrink-0 bg-gray-950">
+                        <Tooltip title={"Expand Sidebar"} placement='right'>
+                            <button type="button" onClick={() => setSidebar(true)} className='h-full w-full flex items-center justify-center text-white cursor-pointer text-xl text-opacity-50 hover:text-opacity-100'>
+                                <span>
+                                    <HiMiniBars3CenterLeft />
+                                </span>
+                            </button>
+                        </Tooltip>
+                    </div>
+                    <div className='w-[calc(100vw-3.5rem)] flex items-center flex-[1]'>
                         <div className='lg:w-1/2 w-full flex lg:justify-start justify-center ps-4 lg:pe-0 pe-4'>
                             <span className='font-medium text-lg tracking-wider text-truncate block w-full'>
                                 Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi adipisci nobis itaque cum voluptatum ullam. Perferendis, itaque. Magnam non quia incidunt laudantium ab similique nesciunt? Quisquam aperiam quia sequi odit!
                             </span>
                         </div>
 
-                        <div className='w-1/2 md:flex hidden items-center justify-end'>
+                        <div className='w-1/2 lg:flex hidden items-center justify-end'>
                             <span className='flex items-center justify-center font-medium text-sm user-select-none'>
                                 <span>
-                                    {dateTime.getHours() < 10 ?
-                                        "0" + dateTime.getHours()
-                                        :
-                                        dateTime.getHours() - 12
-                                    }
+                                    {((dateTime.getHours() % 12) || 12).toString().padStart(2, "0")}
                                     :
-                                    {dateTime.getMinutes() < 10 ?
-                                        "0" + dateTime.getMinutes()
-                                        :
-                                        dateTime.getMinutes()
-                                    }
+                                    {dateTime.getMinutes().toString().padStart(2, "0")}
 
                                     <span className='ms-1'>
-                                        {dateTime.getHours() > 12 ? "PM" : "AM"}
+                                        {dateTime.getHours() >= 12 ? "PM" : "AM"}
                                     </span>
                                 </span>
                                 <span className='mx-1'>
@@ -171,16 +170,7 @@ const DashboardLayoutWraper = () => {
                 </div>
             </div>
 
-            <div className='absolute top-0 min-h-full w-14 bg-gray-900'>
-                <div className='h-14 w-full bg-gray-950'>
-                    <Tooltip title={"Expand Sidebar"} placement='right'>
-                        <button type="button" onClick={() => setSidebar(true)} className='h-full w-full flex items-center justify-center text-white cursor-pointer text-xl text-opacity-50 hover:text-opacity-100'>
-                            <span>
-                                <HiMiniBars3CenterLeft />
-                            </span>
-                        </button>
-                    </Tooltip>
-                </div>
+            <div className='fixed top-14 min-h-full w-14 bg-gray-900 z-50 md:block hidden'>
                 <div className='flex flex-col h-[calc(100vh-3.5rem)]'>
                     <Tooltip title={"Overview"} placement='right'>
                         <Link to="/dashboard/admin" className='h-14 w-full flex items-center justify-center text-white text-xl hover:bg-gray-700'>
@@ -189,17 +179,17 @@ const DashboardLayoutWraper = () => {
                             </span>
                         </Link>
                     </Tooltip>
-                    <Tooltip title={"Manage Quiz"} placement='right'>
+                    <Tooltip title={"Quiz"} placement='right'>
                         <Link to="/dashboard/admin/quiz" className='h-14 w-full flex items-center justify-center text-white text-xl hover:bg-gray-700'>
                             <span>
-                                <MdQuiz />
+                                <FaFolderOpen />
                             </span>
                         </Link>
                     </Tooltip>
-                    <Tooltip title={"Manage Series"} placement='right'>
+                    <Tooltip title={"Series"} placement='right'>
                         <Link to="/dashboard/admin/series" className='h-14 w-full flex items-center justify-center text-white text-xl hover:bg-gray-700'>
                             <span>
-                                <RiFolderUnknowFill />
+                                <FaFolderTree />
                             </span>
                         </Link>
                     </Tooltip>
@@ -241,8 +231,8 @@ const DashboardLayoutWraper = () => {
                 </div>
             </div>
 
-            <div className='absolute mt-14 ms-14 top-0 left-0' style={{ width: 'calc(100vw - 3.5rem)', maxWidth: 'calc(100vw - 3.5rem)', height: 'calc(100vh - 3.5rem)', maxHeight: 'calc(100vh - 3.5rem)' }}>
-                <div className="p-3 bg-gray-800 h-full w-full text-white">
+            <div className='absolute mt-14 md:ms-14 top-0 left-0 min-w-[calc(100%-3.5rem)] md:w-[calc(100%-3.5rem)] w-full min-h-[calc(100vh-3.5rem)]'>
+                <div className="bg-gray-800 w-full text-white min-h-[inherit]">
                     <Outlet />
                 </div>
             </div>
